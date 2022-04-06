@@ -13,21 +13,22 @@ api_id = int(config['USER']['api_id'])
 api_hash = config['USER']['api_hash']
 phone = config['USER']['phone']
 find_in_group = config['USERS']['userlist'].split(',')
+gr_title = config['USERS']['group_name']
+gr_about = config['USERS']['about']
 
 client = TelegramClient(phone, api_id, api_hash)
 
 async def main():
-
     chats = []
     groups = []
-    gr_title = 'test_grp_2'
 
     # add group
     new_group = await client(CreateChannelRequest(
         title=gr_title, 
-        about='testing api', 
+        about=gr_about, 
         megagroup=True))
 
+    # extract all group names
     result = await client(GetDialogsRequest(
                 offset_date=None,
                 offset_id=0,
@@ -36,20 +37,21 @@ async def main():
                 hash=0))
     chats.extend(result.chats)
 
+    # filter out all megagroups
     for chat in chats:
-        # print(chat.title)
         try:
             if chat.megagroup == True:
                 groups.append(chat)
         except:
             continue
     
+    # find new group among all groups
     for group in groups:
         # print(group.title)
         if group.title == gr_title:
-            print("===========================")
             dest_group = group
 
+    # list existing groups and take user input
     print('Choose a group to scrape: ')
     for i, group in enumerate(groups):
         print(str(i) + '- ' + group.title)
@@ -64,10 +66,8 @@ async def main():
     print('Fetching Members...')
     time.sleep(1)
 
+    # extract members from group
     target_group = groups[int(gr_index)]
-    print('-----------------')
-    print(type(target_group), type(dest_group))
-
     print('Fetching Members...')
     all_members = []
     all_members = await client.get_participants(target_group)
@@ -77,9 +77,6 @@ async def main():
     for user in [name.username for name in all_members]:
         if user in find_in_group:
             found_in_group.append(user)
-    print(found_in_group)
-
-    # target_group_entity = InputPeerChannel(new_group.id,new_group.access_hash)
 
     # add users to group
     await client(InviteToChannelRequest(dest_group.title, found_in_group))

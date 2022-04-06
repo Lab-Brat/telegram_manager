@@ -1,0 +1,9 @@
+[USER]
+api_id = 12345678
+api_hash = hash
+phone = +11111111111
+
+[USERS]
+userlist = user1,user2,user3
+group_name = test_grp_3
+about = testing telegram api
