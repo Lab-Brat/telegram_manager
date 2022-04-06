@@ -10,6 +10,8 @@ config.read('config.txt')
 api_id = int(config['USER']['api_id'])
 api_hash = config['USER']['api_hash']
 phone = config['USER']['phone']
+find_in_group = config['USERS']['userlist'].split(',')
+
 client = TelegramClient(phone, api_id, api_hash)
 
 async def main():
@@ -50,7 +52,13 @@ async def main():
     print('Fetching Members...')
     all_members = []
     all_members = await client.get_participants(target_group)
-    print([name.username for name in all_members])
+
+    # find users in group
+    found_in_group = []
+    for user in [name.username for name in all_members]:
+        if user in find_in_group:
+            found_in_group.append(user)
+    print(found_in_group)
 
 with client:
     client.loop.run_until_complete(main())
