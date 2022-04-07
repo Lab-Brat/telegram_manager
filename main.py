@@ -2,6 +2,7 @@ from telethon import TelegramClient
 from telethon.tl.functions.messages import GetDialogsRequest
 from telethon.tl.types import InputPeerEmpty
 from telethon.tl.functions.channels import CreateChannelRequest, InviteToChannelRequest
+from telethon.errors.rpcerrorlist import UserPrivacyRestrictedError
 import time, sys, configparser
 
 config = configparser.ConfigParser()
@@ -75,13 +76,15 @@ async def main():
 
     # enter and process user ids
     chosen_users_input = input("Enters IDs of chosen users: ")
-    chosen_users = []
     for u in chosen_users_input:
-        chosen_users.append(all_members[int(u)].id)
-
-    # add users to group
-    await client(InviteToChannelRequest(dest_group.title, chosen_users))
-    print(f'added {len(chosen_users)} users to group {gr_title}')
+        try:
+            cu = all_members[int(u)].id
+            fname = all_members[int(u)].first_name
+            lname = all_members[int(u)].last_name
+            await client(InviteToChannelRequest(dest_group.title, [cu]))
+            print(f'added {fname} {lname} to group {gr_title}')
+        except UserPrivacyRestrictedError:
+            print("The user's privacy settings do not allow you to do this. Skipping.")
 
 
 with client:
