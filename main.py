@@ -1,10 +1,8 @@
 from telethon import TelegramClient
 from telethon.tl.functions.messages import GetDialogsRequest
-from telethon.tl.types import InputPeerEmpty, InputPeerChannel
-from telethon.tl.functions.channels import CreateChannelRequest
-from telethon.tl.functions.channels import InviteToChannelRequest
-from pprint import pprint
-import time, os, sys, csv, configparser
+from telethon.tl.types import InputPeerEmpty
+from telethon.tl.functions.channels import CreateChannelRequest, InviteToChannelRequest
+import time, sys, configparser
 
 config = configparser.ConfigParser()
 config.read('config.txt')
@@ -12,9 +10,8 @@ config.read('config.txt')
 api_id = int(config['USER']['api_id'])
 api_hash = config['USER']['api_hash']
 phone = config['USER']['phone']
-find_in_group = config['USERS']['userlist'].split(',')
-gr_title = config['USERS']['group_name']
-gr_about = config['USERS']['about']
+gr_title = config['GROUP']['group_name']
+gr_about = config['GROUP']['about']
 
 client = TelegramClient(phone, api_id, api_hash)
 
@@ -52,7 +49,7 @@ async def main():
             dest_group = group
 
     # list existing groups and take user input
-    print('Choose a group to scrape: ')
+    print('Choose a group to get users from: ')
     for i, group in enumerate(groups):
         print(str(i) + '- ' + group.title)
     gr_index = input("Enter a number: ")
@@ -72,14 +69,19 @@ async def main():
     all_members = []
     all_members = await client.get_participants(target_group)
 
-    # find users in group
-    found_in_group = []
-    for user in [name.username for name in all_members]:
-        if user in find_in_group:
-            found_in_group.append(user)
+    # print user ids
+    for i, user in enumerate(all_members):
+        print(f'{i} name: {user.first_name} {user.last_name}')
+
+    # enter and process user ids
+    chosen_users_input = input("Enters IDs of chosen users: ")
+    chosen_users = []
+    for u in chosen_users_input:
+        chosen_users.append(all_members[int(u)].id)
 
     # add users to group
-    await client(InviteToChannelRequest(dest_group.title, found_in_group))
+    await client(InviteToChannelRequest(dest_group.title, chosen_users))
+    print(f'added {len(chosen_users)} users to group {gr_title}')
 
 
 with client:
