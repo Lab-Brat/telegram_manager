@@ -6,7 +6,7 @@ from telethon.errors.rpcerrorlist import UserPrivacyRestrictedError
 import time, sys, configparser
 
 config = configparser.ConfigParser()
-config.read('config.txt')
+config.read('config.txt', encoding='utf-8')
 
 api_id = int(config['USER']['api_id'])
 api_hash = config['USER']['api_hash']
@@ -45,7 +45,6 @@ async def main():
     
     # find new group among all groups
     for group in groups:
-        # print(group.title)
         if group.title == gr_title:
             dest_group = group
 
@@ -73,9 +72,11 @@ async def main():
     # print user ids
     for i, user in enumerate(all_members):
         print(f'{i} name: {user.first_name} {user.last_name}')
+    print('')
 
     # enter and process user ids
-    chosen_users_input = input("Enters IDs of chosen users: ")
+    chosen_users_input = input("Enters IDs of chosen users: ").split(',')
+    print('')
     for u in chosen_users_input:
         try:
             cu = all_members[int(u)].id
